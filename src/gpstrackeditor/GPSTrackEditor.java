@@ -15,8 +15,8 @@ public class GPSTrackEditor {
      */
     public static void main(String[] args) {
 
-        String folder = "C:\\Users\\arthu\\Documents\\Trajets GPS\\";
-        String filename = folder + "Toulouse-Paris_2020-12-19.csv";
+        String folder = "D:\\GPS_Logger\\";
+        String filename = folder + "20260325-102054 - Ski Vars 2026-03-25.gpx";
 
         GPSTrack t = new GPSTrack(filename);
         JFrame frame = new JFrame();
@@ -31,9 +31,7 @@ public class GPSTrackEditor {
         frame.add(new ControlPanel(mapPanel), BorderLayout.NORTH);
         frame.add(mapPanel, BorderLayout.CENTER);
 
-        // frame.setContentPane(mainPanel);
         frame.setVisible(true);
-
     }
 
 }

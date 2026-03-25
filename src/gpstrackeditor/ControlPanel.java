@@ -18,11 +18,11 @@ public class ControlPanel extends JPanel {
 
     public ControlPanel(MapPanel mapPanel) {
         super();
-        JButton speedButton = new JButton("Speed");
+        JButton speedButton = new JButton("Change mode");
         speedButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Pressed 'Speed'");
+                mapPanel.toggleDisplayMode();
             }
         });
         this.add(speedButton);
