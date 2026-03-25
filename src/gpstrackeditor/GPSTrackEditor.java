@@ -32,6 +32,7 @@ public class GPSTrackEditor {
         frame.add(mapPanel, BorderLayout.CENTER);
 
         frame.setVisible(true);
+        mapPanel.resetZoom();
     }
 
 }

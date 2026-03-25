@@ -249,4 +249,45 @@ public class GPSTrack {
         }
         return totalDistance;
     }
+
+    double getLongitudeMin() {
+        double longitudeMin = Double.MAX_VALUE;
+        for (Marker m : markerList) {
+            if (m.getLongitude() < longitudeMin) {
+                longitudeMin = m.getLongitude();
+            }
+        }
+        return longitudeMin;
+    }
+
+    double getLongitudeMax() {
+        double longitudeMax = Double.MIN_VALUE;
+        for (Marker m : markerList) {
+            if (m.getLongitude() > longitudeMax) {
+                longitudeMax = m.getLongitude();
+            }
+        }
+        return longitudeMax;
+    }
+
+    double getLatitudeMin() {
+        double latitudeMin = Double.MAX_VALUE;
+        for (Marker m : markerList) {
+            if (m.getLatitude() < latitudeMin) {
+                latitudeMin = m.getLatitude();
+            }
+        }
+        return latitudeMin;
+    }
+
+    double getLatitudeMax() {
+        double latitudeMin = Double.MIN_VALUE;
+        for (Marker m : markerList) {
+            if (m.getLatitude() > latitudeMin) {
+                latitudeMin = m.getLatitude();
+            }
+        }
+        return latitudeMin;
+    }
+
 }

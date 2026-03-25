@@ -3,6 +3,7 @@ package gpstrackeditor;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -18,7 +19,9 @@ import javax.swing.JPanel;
 public class MapPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
 
     private GPSTrack track;
-    private int HEIGHT = 1000, WIDTH = 800;
+//    private int HEIGHT = 1000, WIDTH = 800;
+    int panelWidth = 1000;
+    int panelHeight = 1000;
 
     private PaintMode displayMode;
 
@@ -30,24 +33,35 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 
     public MapPanel(GPSTrack t) {
         track = t;
-        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        setPreferredSize(new Dimension(panelWidth, panelHeight));
         displayMode = new PaintMode();
         x0 = 300;
         y0 = -5049;
         zoomLevel = -48;
         zoomMultiplicator = 1.1;
-        computeZoom();
         addMouseListener(this);
         addMouseMotionListener(this);
         addMouseWheelListener(this);
         isDragging = false;
     }
 
+    public void actionPerformed(KeyEvent e) {
+        switch (e.getKeyChar()) {
+        case '.':
+            resetZoom();
+            break;
+        default:
+        }
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         // Paint blank
         g.setColor(Color.white);
-        g.fillRect(0, 0, g.getClipBounds().width, g.getClipBounds().height);
+        panelWidth = g.getClipBounds().width;
+        panelHeight = g.getClipBounds().height;
+        g.fillRect(0, 0, panelWidth, panelHeight);
+
         track.paint(g, displayMode, x0, y0, zoom);
     }
 
@@ -118,5 +132,28 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
                 zoom = zoom * zoomMultiplicator;
             }
         }
+    }
+
+    /**
+     * Set the zoom and pan so that all the data is visible, at the highest
+     * possible zoom.
+     */
+    public void resetZoom() {
+        double xMin = track.getLongitudeMin();
+        double xMax = track.getLongitudeMax();
+        double xCenter = (xMin + xMax) / 2;
+        double yMin = track.getLatitudeMin();
+        double yMax = track.getLatitudeMax();
+        double yCenter = (yMin + yMax) / 2;
+
+        int margin = 10;
+        double zoomFitX = (panelWidth - 2 * margin) / (xMax - xMin);
+        double zoomFitY = (panelHeight - 2 * margin) / (yMax - yMin);
+        zoom = Math.min(zoomFitX, zoomFitY);
+
+        x0 = panelWidth / 2 - zoom * xCenter;
+        y0 = panelHeight / 2 - zoom * yCenter;
+
+        repaint();
     }
 }
