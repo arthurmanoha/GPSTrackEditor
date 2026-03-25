@@ -19,14 +19,12 @@ import javax.swing.JPanel;
 public class MapPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
 
     private GPSTrack track;
-//    private int HEIGHT = 1000, WIDTH = 800;
     int panelWidth = 1000;
     int panelHeight = 1000;
 
     private PaintMode displayMode;
 
     private double x0, y0, zoom;
-    private int zoomLevel;
     private double zoomMultiplicator;
     private boolean isDragging;
     private int mouseX = -1, mouseY = -1;
@@ -37,7 +35,7 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
         displayMode = new PaintMode();
         x0 = 300;
         y0 = -5049;
-        zoomLevel = -48;
+        zoom = 1;
         zoomMultiplicator = 1.1;
         addMouseListener(this);
         addMouseMotionListener(this);
@@ -111,27 +109,17 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        zoomLevel += e.getPreciseWheelRotation();
         double zoomBefore = zoom;
-        computeZoom();
-        double zoomAfter = zoom;
-        x0 = e.getX() - (e.getX() - x0) / (zoomBefore / zoomAfter);
-        int panelHeight = this.getHeight();
-        y0 = panelHeight - (e.getY() - (e.getY() - (panelHeight - y0)) / (zoomBefore / zoomAfter));
-        repaint();
-    }
+        double rotation = e.getPreciseWheelRotation();
 
-    private void computeZoom() {
-        zoom = 1;
-        if (zoomLevel > 0) {
-            for (int i = 1; i <= zoomLevel; i++) {
-                zoom = zoom / zoomMultiplicator;
-            }
+        if (rotation < 0) {
+            zoom = zoom * (-zoomMultiplicator * rotation);
         } else {
-            for (int i = 1; i >= zoomLevel; i--) {
-                zoom = zoom * zoomMultiplicator;
-            }
+            zoom = zoom / (zoomMultiplicator * rotation);
         }
+        x0 = e.getX() - (e.getX() - x0) / (zoomBefore / zoom);
+        y0 = panelHeight - (e.getY() - (e.getY() - (panelHeight - y0)) / (zoomBefore / zoom));
+        repaint();
     }
 
     /**
