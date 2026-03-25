@@ -65,7 +65,12 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 
     public void toggleDisplayMode() {
         displayMode.toggle();
+        track.prepareColors(displayMode);
         repaint();
+    }
+
+    public String getDisplayMode() {
+        return displayMode + "";
     }
 
     @Override

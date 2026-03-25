@@ -7,6 +7,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -29,11 +30,12 @@ public class ControlPanel extends JPanel {
 
         mapPanel = newMapPanel;
 
-        JButton speedButton = new JButton("Change mode");
+        JButton speedButton = new JButton(getButtonTitle());
         speedButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mapPanel.toggleDisplayMode();
+                speedButton.setText(mapPanel.getDisplayMode());
             }
         });
         this.add(speedButton);
@@ -48,6 +50,10 @@ public class ControlPanel extends JPanel {
         };
         this.addKeyListener(adapter);
         speedButton.addKeyListener(adapter);
+    }
+
+    private String getButtonTitle() {
+        return mapPanel.getDisplayMode();
     }
 
 }
