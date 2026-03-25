@@ -16,19 +16,21 @@ import java.util.Date;
 public class Marker {
 
     private double longitude, latitude;
+    private double altitude;
     private Color color;
     private static Color defaultColor = Color.black;
     private Date date;
     private Calendar calendar;
 
     public Marker(double newLongitude, double newLatitude) {
-        this(newLongitude, newLatitude, 0, 0, 0, 0, 0, 0);
+        this(newLongitude, newLatitude, 0, 0, 0, 0, 0, 0, 0);
     }
 
-    public Marker(double newLongitude, double newLatitude, int newYear, int newMonth, int newDay,
+    public Marker(double newLongitude, double newLatitude, double newAltitude, int newYear, int newMonth, int newDay,
             int newHour, int newMin, int newSec) {
         longitude = newLongitude;
         latitude = newLatitude;
+        altitude = newAltitude;
         color = defaultColor;
         calendar = Calendar.getInstance();
         calendar.set(newYear, newMonth, newDay, newHour, newMin, newSec);
@@ -60,5 +62,9 @@ public class Marker {
     double getTimeDelay(Marker prev) {
         double delay = (calendar.getTimeInMillis() - prev.calendar.getTimeInMillis()) / 1000;
         return delay;
+    }
+
+    double getAltitude() {
+        return altitude;
     }
 }

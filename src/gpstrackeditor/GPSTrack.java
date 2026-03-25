@@ -20,7 +20,8 @@ public class GPSTrack {
 
     private ArrayList<Marker> markerList;
 
-    private static colorramp.ColorRamp ramp = null;
+    private static colorramp.ColorRamp speedRamp = null;
+    private static colorramp.ColorRamp altitudeRamp = null;
 
     private double maxSpeed;
     private double totalDistance;
@@ -49,6 +50,7 @@ public class GPSTrack {
 
                         double latitude = Double.valueOf(tab[2]);
                         double longitude = Double.valueOf(tab[4]);
+                        double altitude = Double.valueOf(tab[8]);
                         int year = Integer.valueOf(tab[12]);
                         int month = Integer.valueOf(tab[13]);
                         int day = Integer.valueOf(tab[14]);
@@ -57,7 +59,7 @@ public class GPSTrack {
                         String secString = tab[17];
                         int sec = Integer.valueOf(secString.split("\\.")[0]);
 
-                        markerList.add(new Marker(longitude, latitude, year, month, day, hour, min, sec));
+                        markerList.add(new Marker(longitude, latitude, altitude, year, month, day, hour, min, sec));
 
                     } catch (ArrayIndexOutOfBoundsException e) {
                         // File footer, ignore this
@@ -69,6 +71,7 @@ public class GPSTrack {
                     distanceString = distanceString.substring(0, distanceString.indexOf(".") + 3);
                 }
                 System.out.println("Track created: " + distanceString + " km.");
+                System.out.println("Speed max: " + getMaxSpeed());
             }
 
             // XML File
@@ -105,10 +108,8 @@ public class GPSTrack {
         }
 
         // Set the color ramp for speeds.
-        if (ramp == null) {
-            ramp = new ColorRamp();
-            setRampValuesForSpeed();
-        }
+        setupColorRamps();
+
     }
 
     /**
@@ -136,20 +137,33 @@ public class GPSTrack {
      * Compute the color of each marker.
      *
      */
-    private void prepareColors(PaintMode mode) {
+    protected void prepareColors(PaintMode mode) {
+
+        ColorRamp currentRamp = null;
 
         switch (mode.getMode()) {
         case SPEED:
-            for (int markerIndex = 0; markerIndex < markerList.size(); markerIndex++) {
-                double speed = computeSpeed(markerIndex);
-                Color c = ramp.getValue(speed);
-                markerList.get(markerIndex).setColor(c);
-            }
+            currentRamp = speedRamp;
             break;
-        case ACCELERATION:
+        case ALTITUDE:
+            currentRamp = altitudeRamp;
             break;
         default:
             break;
+        }
+        for (int markerIndex = 0; markerIndex < markerList.size(); markerIndex++) {
+            double displayedParameter = 0;
+            Marker currentMarker = markerList.get(markerIndex);
+            switch (mode.getMode()) {
+            case SPEED:
+                displayedParameter = computeSpeed(markerIndex);
+                break;
+            case ALTITUDE:
+                displayedParameter = currentMarker.getAltitude();
+                break;
+            }
+            Color c = currentRamp.getValue(displayedParameter);
+            markerList.get(markerIndex).setColor(c);
         }
     }
 
@@ -161,7 +175,6 @@ public class GPSTrack {
      */
     public void paint(Graphics g, PaintMode displayMode, double x0, double y0, double zoom) {
         prepareColors(displayMode);
-        int index = 0;
 
         Marker previous = null;
         float lineWidth = 3;
@@ -172,8 +185,6 @@ public class GPSTrack {
             g.setColor(m.getColor());
             int xApp = (int) (x0 + zoom * m.getLongitude());
             int yApp = (int) (g.getClipBounds().height - (y0 + zoom * m.getLatitude()));
-
-            index++;
 
             if (previous != null) {
                 int xAppPrev = (int) (x0 + zoom * previous.getLongitude());
@@ -214,14 +225,28 @@ public class GPSTrack {
         return speed;
     }
 
-    private void setRampValuesForSpeed() {
+    private void setupColorRamps() {
 
-        ramp.addValue(0.0, Color.black);
-        ramp.addValue(0.1, Color.red);
-        ramp.addValue(1, Color.orange);
-        ramp.addValue(10, Color.yellow);
-        ramp.addValue(100, Color.green);
-        ramp.addValue(1000, Color.blue);
+        if (speedRamp == null) {
+            speedRamp = new ColorRamp();
+        }
+        speedRamp.addValue(0.0, Color.black);
+        speedRamp.addValue(1, Color.green);
+        speedRamp.addValue(10, Color.blue);
+        speedRamp.addValue(20, Color.orange);
+        speedRamp.addValue(30, Color.red);
+
+        if (altitudeRamp == null) {
+            altitudeRamp = new ColorRamp();
+        }
+        altitudeRamp.addValue(0, Color.black);
+        altitudeRamp.addValue(1700, Color.green.brighter());
+        altitudeRamp.addValue(1800, Color.green);
+        altitudeRamp.addValue(1900, Color.green.darker());
+        altitudeRamp.addValue(2000, Color.gray);
+        altitudeRamp.addValue(2200, Color.blue.darker());
+        altitudeRamp.addValue(2600, Color.blue);
+        altitudeRamp.addValue(2800, Color.white);
     }
 
     /**
@@ -290,4 +315,14 @@ public class GPSTrack {
         return latitudeMin;
     }
 
+    private Double getMaxSpeed() {
+        double maxSpeed = 0;
+        for (int markerIndex = 0; markerIndex < markerList.size(); markerIndex++) {
+            double currentSpeed = computeSpeed(markerIndex);
+            if (maxSpeed < currentSpeed) {
+                maxSpeed = currentSpeed;
+            }
+        }
+        return maxSpeed;
+    }
 }

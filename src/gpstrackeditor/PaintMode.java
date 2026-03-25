@@ -7,7 +7,7 @@ package gpstrackeditor;
 public class PaintMode {
 
     public enum MODE {
-        SPEED, ACCELERATION, HEADING
+        SPEED, ACCELERATION, HEADING, ALTITUDE
     };
 
     private MODE currentMode;
@@ -18,20 +18,26 @@ public class PaintMode {
 
     public void toggle() {
         switch (currentMode) {
-            case SPEED:
-                currentMode = MODE.ACCELERATION;
-                break;
+        case SPEED:
+            currentMode = MODE.ALTITUDE;
+            break;
 
-            case ACCELERATION:
-                currentMode = MODE.HEADING;
-                break;
-            default:
-                currentMode = MODE.SPEED;
-                break;
+        case ALTITUDE:
+            currentMode = MODE.SPEED;
+            break;
+
+        default:
+            currentMode = MODE.SPEED;
+            break;
         }
     }
 
     public MODE getMode() {
         return currentMode;
+    }
+
+    @Override
+    public String toString() {
+        return currentMode.name();
     }
 }
