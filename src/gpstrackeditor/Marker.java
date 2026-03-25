@@ -5,6 +5,10 @@
  */
 package gpstrackeditor;
 
+import java.awt.Color;
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  *
  * @author arthu
@@ -12,10 +16,49 @@ package gpstrackeditor;
 public class Marker {
 
     private double longitude, latitude;
+    private Color color;
+    private static Color defaultColor = Color.black;
+    private Date date;
+    private Calendar calendar;
 
     public Marker(double newLongitude, double newLatitude) {
-        longitude = newLongitude;
-        latitude = newLatitude;
+        this(newLongitude, newLatitude, 0, 0, 0, 0, 0, 0);
     }
 
+    public Marker(double newLongitude, double newLatitude, int newYear, int newMonth, int newDay,
+            int newHour, int newMin, int newSec) {
+        longitude = newLongitude;
+        latitude = newLatitude;
+        color = defaultColor;
+        calendar = Calendar.getInstance();
+        calendar.set(newYear, newMonth, newDay, newHour, newMin, newSec);
+    }
+
+    public void setColor(Color newColor) {
+        color = newColor;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public double getLatitude() {
+        return this.latitude;
+    }
+
+    public double getLongitude() {
+        return this.longitude;
+    }
+
+    /**
+     * Compute and return the time elapsed between previousMarker and this, in
+     * seconds.
+     *
+     * @param prev
+     * @return
+     */
+    double getTimeDelay(Marker prev) {
+        double delay = (calendar.getTimeInMillis() - prev.calendar.getTimeInMillis()) / 1000;
+        return delay;
+    }
 }
