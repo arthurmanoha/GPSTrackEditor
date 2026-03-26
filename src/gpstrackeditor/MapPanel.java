@@ -9,6 +9,15 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 
 /**
@@ -26,8 +35,18 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 
     private double x0, y0, zoom;
     private double zoomMultiplicator;
-    private boolean isDragging;
     private int mouseX = -1, mouseY = -1;
+    private int mouseClickX = -1, mouseClickY = -1;
+
+    private ArrayList<Lift> allLifts;
+    private String currentLiftName;
+    private Lift.LiftType currentLiftType;
+    private String liftsFile = "lifts.txt";
+
+    public enum MapPanelMode {
+        ADDING_START, ADDING_END
+    }
+    private MapPanelMode currentMode;
 
     public MapPanel(GPSTrack t) {
         track = t;
@@ -40,7 +59,9 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
         addMouseListener(this);
         addMouseMotionListener(this);
         addMouseWheelListener(this);
-        isDragging = false;
+        allLifts = new ArrayList<>();
+        currentMode = null;
+        currentLiftType = null;
     }
 
     public void actionPerformed(KeyEvent e) {
@@ -61,6 +82,10 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
         g.fillRect(0, 0, panelWidth, panelHeight);
 
         track.paint(g, displayMode, x0, y0, zoom);
+
+        for (Lift lift : allLifts) {
+            lift.paint(g, x0, y0, zoom);
+        }
     }
 
     public void toggleDisplayMode() {
@@ -79,12 +104,25 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 
     @Override
     public void mousePressed(MouseEvent e) {
-        mouseX = e.getX();
-        mouseY = e.getY();
+        mouseClickX = e.getX();
+        mouseClickY = e.getY();
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
+
+        // Add a lift only if click and release at the same location
+        if (currentMode != null && mouseX == mouseClickX && mouseY == mouseClickY) {
+            double longitude = (mouseX - x0) / zoom;
+            double latitude = (panelHeight - mouseY - y0) / zoom;
+            boolean isStart = (this.currentMode == MapPanelMode.ADDING_START);
+
+            allLifts.add(new Lift(currentLiftType, longitude, latitude, currentLiftName, isStart));
+            currentMode = null;
+        }
+        repaint();
     }
 
     @Override
@@ -110,6 +148,8 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
     }
 
     @Override
@@ -149,4 +189,60 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 
         repaint();
     }
+
+    public void addLift(Lift newLift) {
+        allLifts.add(newLift);
+    }
+
+    protected void resetLifts() {
+        allLifts.clear();
+    }
+
+    protected void setMode(MapPanelMode newMode) {
+        this.currentMode = newMode;
+    }
+
+    protected void setLiftName(String text) {
+        currentLiftName = text;
+    }
+
+    protected void setLiftType(Lift.LiftType liftType) {
+        currentLiftType = liftType;
+    }
+
+    protected void loadLifts() {
+
+        allLifts.clear();
+
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(new File(liftsFile)));
+            String line = reader.readLine();
+            while (line != null) {
+                Lift newLift = new Lift(line);
+                allLifts.add(newLift);
+                line = reader.readLine(); // Next line
+            }
+            reader.close();
+            repaint();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MapPanel.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MapPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    protected void saveLifts() {
+        try {
+            FileWriter writer = new FileWriter(new File(liftsFile));
+
+            for (Lift lift : allLifts) {
+                lift.save(writer);
+            }
+            writer.close();
+        } catch (IOException ex) {
+            Logger.getLogger(MapPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
 }
